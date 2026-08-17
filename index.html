@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>José Roberto de Souza — Engenheiro Eletricista</title>
+<meta name="description" content="Engenheiro Eletricista com atuação em Telecomunicações, Geração e Transmissão. Especialista em análise de eventos de desligamento em linhas de transmissão.">
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg:#0a0f18;
+  --bg-2:#0e1522;
+  --surface:rgba(255,255,255,.035);
+  --surface-2:rgba(255,255,255,.06);
+  --line:rgba(140,170,210,.14);
+  --line-2:rgba(140,170,210,.28);
+  --ink:#e8eef7;
+  --ink-2:#a8b8ce;
+  --ink-3:#6f8199;
+  --accent:#2ee6d6;
+  --accent-2:#4d9fff;
+  --warn:#ffb443;
+  --fault:#ff5d5d;
+  --radius:14px;
+  --maxw:1180px;
+  --ff:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  --fm:"SFMono-Regular",Consolas,"Roboto Mono",Menlo,monospace;
+}
+html[data-theme="light"]{
+  --bg:#f4f7fb;
+  --bg-2:#ffffff;
+  --surface:rgba(10,25,50,.035);
+  --surface-2:rgba(10,25,50,.06);
+  --line:rgba(20,50,90,.13);
+  --line-2:rgba(20,50,90,.26);
+  --ink:#0d1a2b;
+  --ink-2:#3f5570;
+  --ink-3:#6b7f97;
+  --accent:#00897b;
+  --accent-2:#1565c0;
+  --warn:#c46f00;
+  --fault:#c62828;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--ff);
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .5s ease,color .5s ease;
+}
+::selection{background:var(--accent);color:#04121a}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+
+/* scrollbar */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,4vw,36px)}
+
+/* ============================================================
+   BACKGROUND CANVAS + GRID
+   ============================================================ */
+#bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+.gridfx{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 75%);
+  opacity:.5;
+}
+.glow{position:fixed;border-radius:50%;filter:blur(120px);z-index:0;pointer-events:none;opacity:.22}
+.glow.a{width:520px;height:520px;background:var(--accent);top:-160px;left:-140px}
+.glow.b{width:620px;height:620px;background:var(--accent-2);top:35%;right:-260px;opacity:.16}
+main,header,footer{position:relative;z-index:2}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  transition:background .35s ease,backdrop-filter .35s,border-color .35s,padding .35s;
+  border-bottom:1px solid transparent;
+  padding:14px 0;
+}
+header.stuck{
+  background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:blur(16px) saturate(1.4);
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);
+  border-bottom-color:var(--line);
+  padding:8px 0;
+}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:.02em}
+.brand .mark{
+  width:36px;height:36px;flex:0 0 36px;border-radius:9px;
+  background:linear-gradient(140deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#04121a;font-size:14px;font-weight:800;
+  box-shadow:0 0 0 1px var(--line-2),0 6px 22px -8px var(--accent);
+}
+.brand small{display:block;font-size:10.5px;font-weight:500;color:var(--ink-3);letter-spacing:.14em;text-transform:uppercase;line-height:1.2}
+.brand b{font-size:15px;line-height:1.2;display:block}
+.menu{display:flex;align-items:center;gap:4px}
+.menu a{
+  position:relative;font-size:13.5px;color:var(--ink-2);padding:8px 13px;border-radius:8px;
+  transition:color .25s,background .25s;font-weight:500;
+}
+.menu a::after{
+  content:"";position:absolute;left:13px;right:13px;bottom:4px;height:1.5px;
+  background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.6,0,.2,1);
+}
+.menu a:hover{color:var(--ink);background:var(--surface)}
+.menu a:hover::after,.menu a.on::after{transform:scaleX(1)}
+.menu a.on{color:var(--ink)}
+.navtools{display:flex;align-items:center;gap:8px}
+.iconbtn{
+  width:36px;height:36px;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);display:grid;place-items:center;
+  cursor:pointer;transition:.25s;font-size:15px;
+}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.burger{display:none}
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:101;width:0}
+
+@media(max-width:880px){
+  .menu{
+    position:fixed;inset:0 0 0 auto;width:min(300px,82vw);
+    background:var(--bg-2);border-left:1px solid var(--line);
+    flex-direction:column;align-items:stretch;justify-content:center;gap:6px;padding:28px;
+    transform:translateX(100%);transition:transform .4s cubic-bezier(.6,0,.2,1);
+  }
+  .menu.open{transform:translateX(0)}
+  .menu a{font-size:16px;padding:12px 14px}
+  .burger{display:grid}
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{min-height:100svh;display:flex;align-items:center;padding:120px 0 70px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(30px,5vw,64px);align-items:center;width:100%}
+@media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:38px}}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);border:1px solid var(--line-2);
+  background:var(--surface);padding:6px 13px;border-radius:100px;font-weight:600;margin-bottom:22px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+h1{
+  font-size:clamp(2.3rem,6.2vw,4.15rem);line-height:1.03;letter-spacing:-.035em;font-weight:800;
+  margin-bottom:20px;
+}
+h1 .grad{
+  background:linear-gradient(100deg,var(--accent),var(--accent-2) 55%,var(--accent));
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shine 6s linear infinite;
+}
+@keyframes shine{to{background-position:200% center}}
+.role{font-size:clamp(1rem,2.3vw,1.32rem);color:var(--ink-2);font-weight:500;margin-bottom:8px;min-height:1.7em}
+.role .cursor{display:inline-block;width:2px;height:1.05em;background:var(--accent);vertical-align:-.14em;margin-left:3px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.lede{color:var(--ink-2);font-size:clamp(.98rem,1.6vw,1.08rem);max-width:60ch;margin-bottom:32px}
+.lede strong{color:var(--ink);font-weight:600}
+
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:44px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;padding:12px 22px;border-radius:10px;
+  font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,background .25s,border-color .25s,color .25s;
+  position:relative;overflow:hidden;
+}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04121a;box-shadow:0 10px 30px -12px var(--accent)}
+.btn.primary:hover{transform:translateY(-3px);box-shadow:0 16px 38px -12px var(--accent)}
+.btn.ghost{border-color:var(--line-2);color:var(--ink);background:var(--surface)}
+.btn.ghost:hover{transform:translateY(-3px);border-color:var(--accent);color:var(--accent)}
+.btn .sh{position:absolute;top:0;left:-120%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transition:left .6s}
+.btn:hover .sh{left:130%}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:620px}
+@media(max-width:620px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px;
+  transition:.3s;position:relative;overflow:hidden;
+}
+.stat::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.stat:hover{border-color:var(--line-2);transform:translateY(-4px);background:var(--surface-2)}
+.stat:hover::before{transform:scaleX(1)}
+.stat b{display:block;font-size:clamp(1.5rem,3.4vw,2rem);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--ink);font-family:var(--fm)}
+.stat b i{font-style:normal;color:var(--accent);font-size:.62em;vertical-align:.35em;margin-left:1px}
+.stat span{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;display:block;margin-top:7px;line-height:1.35}
+
+/* oscillography panel */
+.scope{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);
+  overflow:hidden;box-shadow:0 30px 70px -40px #000;
+}
+.scope-top{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);
+  background:var(--surface);font-family:var(--fm);font-size:11px;color:var(--ink-3);
+}
+.led{width:9px;height:9px;border-radius:50%}
+.led.r{background:#ff5f57}.led.y{background:#febc2e}.led.g{background:#28c840}
+.scope-top .t{margin-left:8px;letter-spacing:.06em}
+.scope-top .badge{margin-left:auto;color:var(--fault);border:1px solid color-mix(in srgb,var(--fault) 45%,transparent);padding:1px 8px;border-radius:100px;font-size:9.5px;letter-spacing:.1em;font-weight:700}
+.scope canvas{display:block;width:100%;height:260px}
+.scope-legend{display:flex;flex-wrap:wrap;gap:14px;padding:11px 14px;border-top:1px solid var(--line);font-family:var(--fm);font-size:10.5px;color:var(--ink-3)}
+.scope-legend i{display:inline-block;width:16px;height:2px;vertical-align:.28em;margin-right:6px;border-radius:2px}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+section{padding:clamp(70px,10vh,110px) 0;position:relative}
+.shead{margin-bottom:44px;max-width:70ch}
+.snum{
+  font-family:var(--fm);font-size:12px;color:var(--accent);letter-spacing:.2em;font-weight:700;
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.snum::after{content:"";height:1px;flex:1;max-width:110px;background:linear-gradient(90deg,var(--line-2),transparent)}
+h2{font-size:clamp(1.7rem,4.2vw,2.6rem);letter-spacing:-.03em;line-height:1.12;font-weight:800;margin-bottom:14px}
+.sub{color:var(--ink-2);font-size:1rem}
+
+/* reveal */
+[data-rv]{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+[data-rv].in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){[data-rv]{opacity:1!important;transform:none!important}}
+
+/* about */
+.about{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(28px,5vw,56px)}
+@media(max-width:920px){.about{grid-template-columns:1fr}}
+.about p{color:var(--ink-2);margin-bottom:16px}
+.about p strong{color:var(--ink);font-weight:600}
+.quote{
+  border-left:2px solid var(--accent);padding:4px 0 4px 18px;margin:22px 0;
+  color:var(--ink);font-size:1.03rem;font-style:italic;
+}
+.factbox{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  display:flex;flex-direction:column;gap:2px;height:fit-content;position:sticky;top:96px;
+}
+.fact{display:flex;gap:13px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.fact:last-child{border-bottom:0}
+.fact .k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:700;min-width:88px;padding-top:2px}
+.fact .v{font-size:14px;color:var(--ink);font-weight:500}
+.fact .v em{font-style:normal;color:var(--ink-3);font-size:12.5px;display:block}
+
+/* expertise cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;
+  position:relative;overflow:hidden;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,background .35s;
+}
+.card::after{
+  content:"";position:absolute;inset:0;border-radius:var(--radius);pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),color-mix(in srgb,var(--accent) 13%,transparent),transparent 62%);
+}
+.card:hover{transform:translateY(-6px);border-color:var(--line-2);background:var(--surface-2)}
+.card:hover::after{opacity:1}
+.card .ico{
+  width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px;
+  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),transparent);
+  border:1px solid var(--line-2);
+}
+.card .ico svg{width:23px;height:23px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:1.12rem;margin-bottom:10px;letter-spacing:-.015em;font-weight:700}
+.card p{color:var(--ink-2);font-size:14px;margin-bottom:16px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+  font-size:10.5px;font-family:var(--fm);letter-spacing:.04em;color:var(--ink-2);
+  border:1px solid var(--line);background:var(--bg-2);padding:3px 9px;border-radius:6px;transition:.25s;
+}
+.card:hover .tag{border-color:var(--line-2);color:var(--ink)}
+
+/* workflow */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px;margin-top:8px}
+.step{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px;
+  position:relative;transition:.35s;
+}
+.step:hover{border-color:var(--accent);transform:translateY(-5px)}
+.step .n{
+  font-family:var(--fm);font-size:11px;font-weight:800;color:var(--accent);
+  border:1px solid var(--line-2);border-radius:7px;width:30px;height:30px;display:grid;place-items:center;margin-bottom:14px;
+  background:var(--bg-2);
+}
+.step h4{font-size:.98rem;margin-bottom:8px;font-weight:700}
+.step p{font-size:13px;color:var(--ink-2)}
+.step .arrow{position:absolute;top:34px;right:-13px;color:var(--line-2);font-size:16px}
+@media(max-width:900px){.step .arrow{display:none}}
+
+/* timeline */
+.tl{position:relative;padding-left:38px;margin-top:10px}
+.tl::before{
+  content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(180deg,var(--accent),var(--accent-2),transparent);
+  transform:scaleY(var(--tlp,0));transform-origin:top;transition:transform .1s linear;
+}
+.tl::after{content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:var(--line);z-index:-1}
+.tli{position:relative;padding-bottom:34px;max-width:78ch}
+.tli:last-child{padding-bottom:0}
+.tli .node{
+  position:absolute;left:-38px;top:3px;width:24px;height:24px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--line-2);display:grid;place-items:center;transition:.4s;
+}
+.tli .node::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink-3);transition:.4s}
+.tli.in .node{border-color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 12%,transparent)}
+.tli.in .node::before{background:var(--accent)}
+.tli .yr{font-family:var(--fm);font-size:11.5px;color:var(--accent);letter-spacing:.1em;font-weight:700;margin-bottom:5px}
+.tli h4{font-size:1.06rem;margin-bottom:3px;font-weight:700}
+.tli .org{font-size:12.5px;color:var(--ink-3);margin-bottom:10px;font-weight:500}
+.tli p{color:var(--ink-2);font-size:14px;margin-bottom:11px}
+.tli ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.tli li{font-size:13.5px;color:var(--ink-2);padding-left:17px;position:relative}
+.tli li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:1px;background:var(--accent);transform:rotate(45deg)}
+
+/* skills */
+.skgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(24px,4vw,48px)}
+.skgroup h3{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:20px;font-weight:700}
+.sk{margin-bottom:18px}
+.sk .r{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.sk .r b{font-size:13.5px;font-weight:600}
+.sk .r span{font-family:var(--fm);font-size:11px;color:var(--ink-3)}
+.bar{height:5px;border-radius:100px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 1.3s cubic-bezier(.2,.8,.2,1)}
+
+/* toolchips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.chip{
+  font-size:12px;padding:7px 13px;border-radius:100px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);transition:.25s;cursor:default;font-weight:500;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+
+/* contact */
+.contact{
+  border:1px solid var(--line);border-radius:20px;padding:clamp(30px,5vw,54px);
+  background:linear-gradient(150deg,var(--surface),transparent 70%);
+  position:relative;overflow:hidden;text-align:center;
+}
+.contact::before{
+  content:"";position:absolute;top:-50%;left:50%;transform:translateX(-50%);
+  width:700px;height:700px;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 12%,transparent),transparent 65%);
+}
+.contact > *{position:relative}
+.contact h2{margin-bottom:12px}
+.contact .sub{margin:0 auto 30px;max-width:56ch}
+.links{display:flex;flex-wrap:wrap;gap:11px;justify-content:center}
+.lnk{
+  display:inline-flex;align-items:center;gap:9px;padding:11px 19px;border-radius:10px;
+  border:1px solid var(--line);background:var(--bg-2);font-size:13.5px;font-weight:600;
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1),border-color .28s,color .28s;
+}
+.lnk svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.lnk:hover{transform:translateY(-3px);border-color:var(--accent);color:var(--accent)}
+
+footer{border-top:1px solid var(--line);padding:26px 0;margin-top:30px}
+.foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-3)}
+.foot .ph{font-family:var(--fm);font-size:11px}
+
+#top{
+  position:fixed;right:22px;bottom:22px;width:42px;height:42px;border-radius:11px;z-index:90;
+  border:1px solid var(--line-2);background:var(--bg-2);color:var(--ink-2);cursor:pointer;
+  display:grid;place-items:center;opacity:0;pointer-events:none;transition:.3s;
+}
+#top.show{opacity:1;pointer-events:auto}
+#top:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px)}
+
+.ph-note{
+  display:inline-block;font-family:var(--fm);font-size:10.5px;color:var(--warn);
+  border:1px dashed color-mix(in srgb,var(--warn) 50%,transparent);border-radius:5px;padding:0 5px;
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<canvas id="bgfx"></canvas>
+<div class="gridfx"></div>
+<div class="glow a"></div>
+<div class="glow b"></div>
+
+<!-- ============ NAV ============ -->
+<header id="hdr">
+  <div class="wrap nav">
+    <a href="#hero" class="brand">
+      <span class="mark">JR</span>
+      <span>
+        <b>José Roberto de Souza</b>
+        <small>Engenheiro Eletricista</small>
+      </span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="#sobre">Sobre</a>
+      <a href="#atuacao">Atuação</a>
+      <a href="#analise">Análise de Eventos</a>
+      <a href="#trajetoria">Trajetória</a>
+      <a href="#competencias">Competências</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <div class="navtools">
+      <button class="iconbtn" id="theme" aria-label="Alternar tema" title="Alternar tema">◐</button>
+      <button class="iconbtn burger" id="burger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow" data-rv><span class="dot"></span> Grupo Bimetal · desde 2003</span>
+      <h1 data-rv>Engenharia elétrica<br>aplicada a <span class="grad">sistemas críticos</span></h1>
+      <p class="role" data-rv><span id="typed"></span><span class="cursor"></span></p>
+      <p class="lede" data-rv>
+        Mais de duas décadas no <strong>Grupo Bimetal</strong> atuando na interseção entre
+        <strong>telecomunicações</strong>, <strong>geração</strong> e <strong>transmissão</strong> de energia.
+        Especializado na <strong>análise de eventos de desligamento em linhas de transmissão</strong> —
+        da oscilografia bruta ao relatório conclusivo.
+      </p>
+      <div class="cta" data-rv>
+        <a href="#analise" class="btn primary"><span class="sh"></span>Ver especialidade técnica →</a>
+        <a href="#contato" class="btn ghost">Entrar em contato</a>
+      </div>
+      <div class="stats" data-rv>
+        <div class="stat"><b data-count="22" data-suffix="+">0</b><span>Anos de<br>experiência</span></div>
+        <div class="stat"><b data-count="3">0</b><span>Segmentos<br>do setor elétrico</span></div>
+        <div class="stat"><b data-count="2003">0</b><span>Início no<br>Grupo Bimetal</span></div>
+        <div class="stat"><b data-count="100" data-suffix="%">0</b><span>Foco em<br>confiabilidade</span></div>
+      </div>
+    </div>
+
+    <div data-rv>
+      <div class="scope">
+        <div class="scope-top">
+          <i class="led r"></i><i class="led y"></i><i class="led g"></i>
+          <span class="t">EVENTO_LT.CFG · COMTRADE</span>
+          <span class="badge">TRIP · FASE A</span>
+        </div>
+        <canvas id="scope"></canvas>
+        <div class="scope-legend">
+          <span><i style="background:#2ee6d6"></i>IA</span>
+          <span><i style="background:#4d9fff"></i>IB</span>
+          <span><i style="background:#ffb443"></i>IC</span>
+          <span style="margin-left:auto">Fs 1920 Hz · 32 am/ciclo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOBRE ============ -->
+<section id="sobre">
+  <div class="wrap">
+    <div class="shead" data-rv>
+      <div class="snum">01 — PERFIL</div>
+      <h2>Duas décadas construindo confiabilidade</h2>
+      <p class="sub">Engenharia de campo, análise técnica e visão sistêmica do setor elétrico.</p>
+    </div>
+
+    <div class="about">
+      <div data-rv>
+        <p>
+          Sou <strong>Engenheiro Eletricista</strong> e integro o <strong>Grupo Bimetal desde 2003</strong>.
+          Ao longo desse período, minha atuação percorreu três frentes que se conectam diretamente na
+          operação de um sistema elétrico moderno: <strong>telecomunicações</strong>,
+          <strong>geração</strong> e <strong>transmissão</strong>.
+        </p>
+        <p>
+          Essa combinação é pouco comum e virou meu diferencial. Entender o caminho do sinal — do
+          transdutor de campo ao SCADA, passando pela teleproteção — permite interpretar um evento de
+          desligamento com muito mais precisão do que olhando apenas para a grandeza elétrica isolada.
+          Quando um relé atua, a resposta raramente está em um único arquivo.
+        </p>
+        <div class="quote" data-rv>
+          “Um desligamento não é um evento isolado: é o registro de uma cadeia de causas.
+          Meu trabalho é reconstruir essa cadeia com evidência, não com suposição.”
+        </div>
+        <p>
+          Hoje concentro boa parte da minha atuação na <strong>análise forense de eventos de
+          desligamento em linhas de transmissão</strong>, correlacionando <strong>logs de IEDs</strong>,
+          <strong>oscilografias COMTRADE</strong>, <strong>fault reports</strong> e documentação técnica
+          em PDF. Para acelerar e padronizar esse processo, desenvolvo minhas próprias
+          <strong>ferramentas em Python</strong> — parsers, rotinas de fasores, localização de falta e
+          geração automatizada de relatórios.
+        </p>
+        <p>
+          Acredito em engenharia orientada a dado: hipótese formulada, evidência coletada,
+          conclusão sustentada. É assim que se reduz tempo de indisponibilidade e se evita a recorrência.
+        </p>
+      </div>
+
+      <aside class="factbox" data-rv>
+        <div class="fact"><span class="k">Formação</span><span class="v">Engenharia Elétrica<em>[Instituição · ano de conclusão]</em></span></div>
+        <div class="fact"><span class="k">Empresa</span><span class="v">Grupo Bimetal<em>Desde 2003 · [cargo atual]</em></span></div>
+        <div class="fact"><span class="k">Setores</span><span class="v">Telecom · Geração · Transmissão</span></div>
+        <div class="fact"><span class="k">Foco</span><span class="v">Análise de desligamentos em LTs<em>Oscilografia, proteção e teleproteção</em></span></div>
+        <div class="fact"><span class="k">Stack</span><span class="v">Python · COMTRADE · SCADA<em>pandas, numpy, matplotlib</em></span></div>
+        <div class="fact"><span class="k">Registro</span><span class="v"><span class="ph-note">CREA [número]</span></span></div>
+        <div class="fact"><span class="k">Local</span><span class="v">[Cidade / UF] · Brasil</span></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ATUAÇÃO ============ -->
+<section id="atuacao">
+  <div class="wrap">
+    <div class="shead" data-rv>
+      <div class="snum">02 — ÁREAS DE ATUAÇÃO</div>
+      <h2>Três frentes, um mesmo sistema</h2>
+      <p class="sub">Da fibra óptica que carrega o teledisparo à turbina que injeta potência na rede.</p>
+    </div>
+
+    <div class="cards">
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 18h.01"/><path d="M8.5 14.5a5 5 0 0 1 7 0"/><path d="M5 11a10 10 0 0 1 14 0"/><path d="M1.5 7.5a15 15 0 0 1 21 0"/></svg></div>
+        <h3>Telecomunicações</h3>
+        <p>
+          Infraestrutura de comunicação que sustenta a proteção e a supervisão do sistema:
+          enlaces de teleproteção, redes de fibra óptica (OPGW), rádio digital e a integração
+          entre subestação e centro de operação.
+        </p>
+        <div class="tags">
+          <span class="tag">Teleproteção</span><span class="tag">OPGW / Fibra</span>
+          <span class="tag">Rádio digital</span><span class="tag">IEC 61850</span>
+          <span class="tag">SCADA / RTU</span><span class="tag">Multiplexadores</span>
+        </div>
+      </article>
+
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10H12l1-8Z"/></svg></div>
+        <h3>Geração</h3>
+        <p>
+          Atuação em usinas e centrais geradoras: sistemas de proteção de gerador e
+          transformador elevador, serviços auxiliares, regulação, sincronismo e a interface
+          elétrica com a rede básica.
+        </p>
+        <div class="tags">
+          <span class="tag">Proteção de gerador</span><span class="tag">Serviços auxiliares</span>
+          <span class="tag">Sincronismo</span><span class="tag">Comissionamento</span>
+          <span class="tag">Trafo elevador</span>
+        </div>
+      </article>
+
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="m5 8 7-4 7 4"/><path d="m4 14 8-4 8 4"/><path d="M6 22 12 12l6 10"/></svg></div>
+        <h3>Transmissão</h3>
+        <p>
+          O centro da minha especialidade: linhas de transmissão e subestações de alta e
+          extra-alta tensão. Proteção de distância e diferencial de linha, religamento
+          automático, localização de falta e análise pós-evento.
+        </p>
+        <div class="tags">
+          <span class="tag">Proteção 21 / 87L</span><span class="tag">Religamento (79)</span>
+          <span class="tag">Localização de falta</span><span class="tag">Subestações AT/EAT</span>
+          <span class="tag">Oscilografia</span><span class="tag">Ajustes de proteção</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANÁLISE ============ -->
+<section id="analise">
+  <div class="wrap">
+    <div class="shead" data-rv>
+      <div class="snum">03 — ESPECIALIDADE</div>
+      <h2>Análise de eventos de desligamento em LTs</h2>
+      <p class="sub">
+        Um método reprodutível para transformar arquivos brutos de registradores e relés
+        em conclusão técnica defensável.
+      </p>
+    </div>
+
+    <div class="flow">
+      <div class="step" data-rv>
+        <div class="n">01</div>
+        <h4>Coleta e inventário</h4>
+        <p>Extração de oscilografias (<b>.CFG/.DAT</b>), <b>fault reports</b>, logs sequenciais de eventos (SOE) e sinalizações de teleproteção dos IEDs de ambos os terminais.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step" data-rv>
+        <div class="n">02</div>
+        <h4>Sincronização temporal</h4>
+        <p>Alinhamento das bases de tempo (GPS/IRIG-B) entre terminais e registradores. Sem tempo confiável não existe sequência de eventos confiável.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step" data-rv>
+        <div class="n">03</div>
+        <h4>Processamento em Python</h4>
+        <p>Leitura dos COMTRADE, filtragem, estimação de fasores (DFT), cálculo de impedância aparente, componentes simétricas e trajetória no plano R-X.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step" data-rv>
+        <div class="n">04</div>
+        <h4>Diagnóstico da falta</h4>
+        <p>Classificação (fase-terra, bifásica, trifásica), estimativa de distância, verificação da coordenação e do desempenho do religamento automático.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step" data-rv>
+        <div class="n">05</div>
+        <h4>Relatório e ação</h4>
+        <p>Documento técnico com gráficos, cronologia, causa provável e recomendações — inspeção de campo, revisão de ajustes ou correção de teleproteção.</p>
+      </div>
+    </div>
+
+    <div class="cards" style="margin-top:26px">
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg></div>
+        <h3>Oscilografia &amp; COMTRADE</h3>
+        <p>Interpretação de registros de perturbação: formas de onda, fasores, harmônicos, saturação de TC e comportamento dinâmico durante a falta.</p>
+        <div class="tags"><span class="tag">IEEE C37.111</span><span class="tag">DFT / fasores</span><span class="tag">Componentes simétricas</span><span class="tag">Saturação de TC</span></div>
+      </article>
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+        <h3>Logs, SOE &amp; Fault Reports</h3>
+        <p>Correlação da sequência de eventos entre IEDs, RDPs e SCADA. Parsing automatizado de relatórios proprietários e normalização em base única.</p>
+        <div class="tags"><span class="tag">SOE</span><span class="tag">Fault report</span><span class="tag">Parsing</span><span class="tag">IRIG-B / GPS</span></div>
+      </article>
+      <article class="card" data-rv data-tilt>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+        <h3>Automação em Python</h3>
+        <p>Rotinas próprias para leitura de COMTRADE, extração de dados de PDFs de análise, geração de gráficos padronizados e montagem automática de relatórios.</p>
+        <div class="tags"><span class="tag">pandas</span><span class="tag">numpy</span><span class="tag">matplotlib</span><span class="tag">comtrade</span><span class="tag">pdfplumber</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRAJETÓRIA ============ -->
+<section id="trajetoria">
+  <div class="wrap">
+    <div class="shead" data-rv>
+      <div class="snum">04 — TRAJETÓRIA</div>
+      <h2>Grupo Bimetal · 2003 → hoje</h2>
+      <p class="sub">
+        Uma progressão contínua: da execução em campo à análise técnica e à liderança de estudos.
+        <span class="ph-note">confirmar cargos e datas</span>
+      </p>
+    </div>
+
+    <div class="tl" id="tl">
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">2003 — INGRESSO</div>
+        <h4>Início no Grupo Bimetal</h4>
+        <div class="org">Grupo Bimetal · [Unidade / Diretoria]</div>
+        <p>Entrada na empresa com atuação inicial em <strong>[área / cargo inicial]</strong>, ganhando base prática em instalações elétricas, instrumentação e sistemas de comunicação.</p>
+        <ul>
+          <li>Execução e acompanhamento de atividades de campo</li>
+          <li>Leitura de diagramas unifilares, funcionais e de interligação</li>
+        </ul>
+      </div>
+
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">[ANO] — TELECOMUNICAÇÕES</div>
+        <h4>Infraestrutura de telecom e teleproteção</h4>
+        <div class="org">Grupo Bimetal · [cargo]</div>
+        <p>Consolidação na área de telecomunicações aplicadas ao setor elétrico, com foco nos enlaces que sustentam proteção e supervisão.</p>
+        <ul>
+          <li>Implantação e manutenção de enlaces de teleproteção</li>
+          <li>Redes de fibra óptica (OPGW) e sistemas de transmissão digital</li>
+          <li>Integração de RTUs e comunicação com centro de operação</li>
+        </ul>
+      </div>
+
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">[ANO] — GERAÇÃO</div>
+        <h4>Sistemas elétricos de centrais geradoras</h4>
+        <div class="org">Grupo Bimetal · [cargo]</div>
+        <p>Atuação em usinas: proteção, serviços auxiliares e interface com a rede básica, incluindo comissionamento e testes funcionais.</p>
+        <ul>
+          <li>Proteção de gerador, transformador elevador e barramentos</li>
+          <li>Comissionamento e testes de aceitação em campo</li>
+          <li>[Projeto / usina de destaque]</li>
+        </ul>
+      </div>
+
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">[ANO] — TRANSMISSÃO</div>
+        <h4>Linhas de transmissão e subestações AT/EAT</h4>
+        <div class="org">Grupo Bimetal · [cargo]</div>
+        <p>Migração do foco para transmissão, área em que atuo com maior profundidade até hoje.</p>
+        <ul>
+          <li>Estudos e parametrização de proteção de linha (21, 87L, 79, 67N)</li>
+          <li>Acompanhamento de desempenho de LTs e subestações</li>
+          <li>Interface técnica com ONS / agentes de transmissão</li>
+        </ul>
+      </div>
+
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">[ANO] — ANÁLISE DE EVENTOS</div>
+        <h4>Análise de desligamentos e automação em Python</h4>
+        <div class="org">Grupo Bimetal · [cargo]</div>
+        <p>Estruturação de um processo próprio de análise forense de desligamentos, apoiado por ferramentas desenvolvidas internamente.</p>
+        <ul>
+          <li>Análise de oscilografias, fault reports e logs de IEDs</li>
+          <li>Desenvolvimento de scripts Python para processamento de COMTRADE</li>
+          <li>Padronização e automação de relatórios técnicos de ocorrência</li>
+        </ul>
+      </div>
+
+      <div class="tli" data-rv>
+        <span class="node"></span>
+        <div class="yr">HOJE</div>
+        <h4>[Cargo atual]</h4>
+        <div class="org">Grupo Bimetal</div>
+        <p>Responsável por <strong>[escopo atual: equipe, carteira de ativos, estudos]</strong>, com foco em confiabilidade, redução de indisponibilidade e melhoria contínua dos sistemas de proteção.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPETÊNCIAS ============ -->
+<section id="competencias">
+  <div class="wrap">
+    <div class="shead" data-rv>
+      <div class="snum">05 — COMPETÊNCIAS</div>
+      <h2>Competências técnicas</h2>
+      <p class="sub">Níveis indicativos — ajuste livre conforme sua autoavaliação.</p>
+    </div>
+
+    <div class="skgrid">
+      <div class="skgroup" data-rv>
+        <h3>Sistemas de potência</h3>
+        <div class="sk"><div class="r"><b>Proteção de linhas de transmissão</b><span>Especialista</span></div><div class="bar"><i data-w="95"></i></div></div>
+        <div class="sk"><div class="r"><b>Análise de oscilografia / COMTRADE</b><span>Especialista</span></div><div class="bar"><i data-w="95"></i></div></div>
+        <div class="sk"><div class="r"><b>Subestações AT / EAT</b><span>Avançado</span></div><div class="bar"><i data-w="88"></i></div></div>
+        <div class="sk"><div class="r"><b>Proteção e operação de geração</b><span>Avançado</span></div><div class="bar"><i data-w="82"></i></div></div>
+        <div class="sk"><div class="r"><b>Estudos de curto-circuito e coordenação</b><span>Avançado</span></div><div class="bar"><i data-w="85"></i></div></div>
+      </div>
+
+      <div class="skgroup" data-rv>
+        <h3>Telecom, automação &amp; dados</h3>
+        <div class="sk"><div class="r"><b>Teleproteção e enlaces de comunicação</b><span>Especialista</span></div><div class="bar"><i data-w="92"></i></div></div>
+        <div class="sk"><div class="r"><b>Python para análise de eventos</b><span>Avançado</span></div><div class="bar"><i data-w="88"></i></div></div>
+        <div class="sk"><div class="r"><b>SCADA / IEC 61850 / protocolos</b><span>Avançado</span></div><div class="bar"><i data-w="84"></i></div></div>
+        <div class="sk"><div class="r"><b>Redes ópticas (OPGW) e rádio digital</b><span>Avançado</span></div><div class="bar"><i data-w="86"></i></div></div>
+        <div class="sk"><div class="r"><b>Documentação e relatoria técnica</b><span>Especialista</span></div><div class="bar"><i data-w="93"></i></div></div>
+      </div>
+    </div>
+
+    <div class="chips" data-rv>
+      <span class="chip">Python</span><span class="chip">pandas</span><span class="chip">numpy</span>
+      <span class="chip">matplotlib</span><span class="chip">COMTRADE</span><span class="chip">IEEE C37.111</span>
+      <span class="chip">IEC 61850</span><span class="chip">DNP3</span><span class="chip">IEC 60870-5-104</span>
+      <span class="chip">SEL / Siemens / GE / ABB</span><span class="chip">ATP / ATPDraw</span>
+      <span class="chip">AutoCAD</span><span class="chip">SCADA</span><span class="chip">IRIG-B / GPS</span>
+      <span class="chip">NR-10</span><span class="chip">Procedimentos de Rede ONS</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTATO ============ -->
+<section id="contato">
+  <div class="wrap">
+    <div class="contact" data-rv>
+      <div class="snum" style="justify-content:center">06 — CONTATO</div>
+      <h2>Vamos conversar sobre confiabilidade</h2>
+      <p class="sub">
+        Disponível para discussões técnicas, consultoria em análise de desligamentos,
+        estudos de proteção e projetos no setor elétrico.
+      </p>
+      <div class="links">
+        <a class="lnk" href="mailto:jr@jrdesouza.com.br">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+          jr@jrdesouza.com.br
+        </a>
+        <a class="lnk" href="https://www.linkedin.com/in/[seu-perfil]" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M4 9h3v11H4z"/><circle cx="5.5" cy="5.5" r="1.6"/><path d="M10 20V9h3v1.6A3.6 3.6 0 0 1 20 13v7h-3v-6a1.9 1.9 0 0 0-4 0v6z"/></svg>
+          LinkedIn
+        </a>
+        <a class="lnk" href="https://jrdesouza.com.br" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>
+          jrdesouza.com.br
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© <span id="yr"></span> José Roberto de Souza · Engenheiro Eletricista</span>
+    <span class="ph">Telecom · Geração · Transmissão</span>
+  </div>
+</footer>
+
+<button id="top" aria-label="Voltar ao topo">↑</button>
+
+<script>
+(function(){
+"use strict";
+var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- ano ---------- */
+document.getElementById("yr").textContent = new Date().getFullYear();
+
+/* ---------- tema ---------- */
+var themeBtn = document.getElementById("theme");
+var saved = null;
+try { saved = window.__theme || null; } catch(e){}
+function setTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "light" ? "☀" : "◐";
+  window.__theme = t;
+}
+setTheme("dark");
+themeBtn.addEventListener("click", function(){
+  setTheme(document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light");
+});
+
+/* ---------- menu mobile ---------- */
+var menu = document.getElementById("menu"), burger = document.getElementById("burger");
+burger.addEventListener("click", function(){
+  menu.classList.toggle("open");
+  burger.textContent = menu.classList.contains("open") ? "✕" : "☰";
+});
+menu.addEventListener("click", function(e){
+  if(e.target.tagName === "A"){ menu.classList.remove("open"); burger.textContent = "☰"; }
+});
+
+/* ---------- scroll: header, progress, back-to-top, timeline ---------- */
+var hdr = document.getElementById("hdr"), bar = document.getElementById("progress"),
+    top = document.getElementById("top"), tl = document.getElementById("tl");
+function onScroll(){
+  var y = window.scrollY || window.pageYOffset;
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  hdr.classList.toggle("stuck", y > 24);
+  bar.style.width = (h > 0 ? (y / h) * 100 : 0) + "%";
+  top.classList.toggle("show", y > 600);
+  if(tl){
+    var r = tl.getBoundingClientRect();
+    var p = (window.innerHeight * 0.72 - r.top) / r.height;
+    tl.style.setProperty("--tlp", Math.max(0, Math.min(1, p)));
+  }
+}
+window.addEventListener("scroll", onScroll, {passive:true});
+window.addEventListener("resize", onScroll);
+onScroll();
+top.addEventListener("click", function(){ window.scrollTo({top:0, behavior:"smooth"}); });
+
+/* ---------- reveal ---------- */
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+  });
+}, {threshold:0.12, rootMargin:"0px 0px -8% 0px"});
+document.querySelectorAll("[data-rv]").forEach(function(el, i){
+  el.style.transitionDelay = (Math.min(i,6) * 55) + "ms";
+  io.observe(el);
+});
+document.querySelectorAll(".tli").forEach(function(el){ io.observe(el); });
+
+/* ---------- contadores ---------- */
+var cio = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    cio.unobserve(e.target);
+    var el = e.target, end = parseFloat(el.dataset.count), sfx = el.dataset.suffix || "";
+    if(RM){ el.innerHTML = end + (sfx ? "<i>"+sfx+"</i>" : ""); return; }
+    var t0 = performance.now(), dur = 1500;
+    (function tick(t){
+      var p = Math.min(1, (t - t0) / dur);
+      var e2 = 1 - Math.pow(1 - p, 4);
+      el.innerHTML = Math.round(end * e2) + (sfx ? "<i>"+sfx+"</i>" : "");
+      if(p < 1) requestAnimationFrame(tick);
+    })(t0);
+  });
+}, {threshold:0.5});
+document.querySelectorAll("[data-count]").forEach(function(el){ cio.observe(el); });
+
+/* ---------- barras ---------- */
+var bio = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    bio.unobserve(e.target);
+    var i = e.target;
+    setTimeout(function(){ i.style.width = i.dataset.w + "%"; }, 120);
+  });
+}, {threshold:0.6});
+document.querySelectorAll(".bar i").forEach(function(el){ bio.observe(el); });
+
+/* ---------- nav ativo ---------- */
+var links = [].slice.call(document.querySelectorAll(".menu a"));
+var secs = links.map(function(a){ return document.querySelector(a.getAttribute("href")); }).filter(Boolean);
+var sio = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    links.forEach(function(a){ a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id); });
+  });
+}, {rootMargin:"-45% 0px -50% 0px"});
+secs.forEach(function(s){ sio.observe(s); });
+
+/* ---------- typewriter ---------- */
+var phrases = [
+  "Engenheiro Eletricista · Grupo Bimetal",
+  "Telecomunicações · Geração · Transmissão",
+  "Análise de eventos de desligamento em LTs",
+  "Oscilografia, COMTRADE e proteção de sistemas",
+  "Automação de análises técnicas com Python"
+];
+var tEl = document.getElementById("typed");
+if(RM){ tEl.textContent = phrases[0]; }
+else {
+  var pi = 0, ci = 0, del = false;
+  (function type(){
+    var s = phrases[pi];
+    tEl.textContent = del ? s.slice(0, --ci) : s.slice(0, ++ci);
+    var d = del ? 28 : 55;
+    if(!del && ci === s.length){ del = true; d = 1900; }
+    else if(del && ci === 0){ del = false; pi = (pi + 1) % phrases.length; d = 320; }
+    setTimeout(type, d);
+  })();
+}
+
+/* ---------- tilt/glow nos cards ---------- */
+document.querySelectorAll("[data-tilt]").forEach(function(c){
+  c.addEventListener("mousemove", function(e){
+    var r = c.getBoundingClientRect();
+    c.style.setProperty("--mx", (e.clientX - r.left) + "px");
+    c.style.setProperty("--my", (e.clientY - r.top) + "px");
+  });
+});
+
+/* ============================================================
+   OSCILOGRAFIA (canvas) — 3 fases com falta fase-A e trip
+   ============================================================ */
+(function(){
+  var cv = document.getElementById("scope");
+  if(!cv) return;
+  var ctx = cv.getContext("2d"), W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function fit(){
+    var r = cv.getBoundingClientRect();
+    W = r.width; H = r.height || 260;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  fit(); window.addEventListener("resize", fit);
+
+  var cols = ["#2ee6d6", "#4d9fff", "#ffb443"];
+  var t0 = performance.now();
+  var CYCLES = 6;               // ciclos visíveis
+  var FAULT = 2.2;              // ciclo em que a falta inicia
+  var TRIP  = 3.6;              // ciclo do trip
+
+  function env(cy, ph){
+    // amplitude por fase ao longo do tempo (pu)
+    if(cy < FAULT) return 1;
+    if(cy > TRIP) return ph === 0 ? 0 : Math.max(0, 1 - (cy - TRIP) * 0.9);
+    // durante a falta: fase A cresce muito, demais leve queda
+    var k = (cy - FAULT) / (TRIP - FAULT);
+    return ph === 0 ? 1 + 2.3 * Math.min(1, k * 2.2) : 1 - 0.18 * k;
+  }
+
+  function draw(now){
+    var el = (now - t0) / 1000;
+    var sweep = (el % 4) / 4;          // 0..1 varredura
+    ctx.clearRect(0, 0, W, H);
+
+    var light = document.documentElement.getAttribute("data-theme") === "light";
+    // grade
+    ctx.strokeStyle = light ? "rgba(20,50,90,.10)" : "rgba(140,170,210,.10)";
+    ctx.lineWidth = 1;
+    for(var gx = 0; gx <= 12; gx++){
+      var x = (W / 12) * gx;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for(var gy = 0; gy <= 6; gy++){
+      var y = (H / 6) * gy;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    // linha zero
+    ctx.strokeStyle = light ? "rgba(20,50,90,.22)" : "rgba(140,170,210,.22)";
+    ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+
+    // marcador de falta
+    var fx = (FAULT / CYCLES) * W, tx = (TRIP / CYCLES) * W;
+    ctx.save();
+    ctx.setLineDash([4,4]);
+    ctx.strokeStyle = "rgba(255,93,93,.55)";
+    ctx.beginPath(); ctx.moveTo(fx, 0); ctx.lineTo(fx, H); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,180,67,.55)";
+    ctx.beginPath(); ctx.moveTo(tx, 0); ctx.lineTo(tx, H); ctx.stroke();
+    ctx.restore();
+    ctx.font = "9px monospace";
+    ctx.fillStyle = "rgba(255,93,93,.85)"; ctx.fillText("FALTA", fx + 4, 12);
+    ctx.fillStyle = "rgba(255,180,67,.85)"; ctx.fillText("TRIP", tx + 4, 12);
+
+    // ondas
+    var amp = H * 0.15, N = Math.max(160, Math.floor(W));
+    for(var ph = 0; ph < 3; ph++){
+      ctx.beginPath();
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = cols[ph];
+      ctx.shadowBlur = 8; ctx.shadowColor = cols[ph];
+      for(var i = 0; i <= N; i++){
+        var f = i / N;
+        var cy = f * CYCLES;
+        var v = Math.sin(2 * Math.PI * cy - ph * (2 * Math.PI / 3)) * env(cy, ph) * amp;
+        // decaimento DC durante a falta na fase A
+        if(ph === 0 && cy > FAULT && cy < TRIP) v += Math.exp(-(cy - FAULT) * 1.1) * amp * 0.85;
+        var xx = f * W, yy = H/2 - v;
+        if(i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // varredura
+    var sx = sweep * W;
+    var g = ctx.createLinearGradient(sx - 60, 0, sx, 0);
+    g.addColorStop(0, "rgba(46,230,214,0)");
+    g.addColorStop(1, "rgba(46,230,214,.16)");
+    ctx.fillStyle = g; ctx.fillRect(sx - 60, 0, 60, H);
+    ctx.strokeStyle = "rgba(46,230,214,.7)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+
+    if(!RM) requestAnimationFrame(draw);
+  }
+  if(RM){ draw(performance.now()); } else { requestAnimationFrame(draw); }
+})();
+
+/* ============================================================
+   FUNDO: rede de nós (torres/subestações) com pulsos
+   ============================================================ */
+(function(){
+  var cv = document.getElementById("bgfx");
+  if(!cv || RM) return;
+  var ctx = cv.getContext("2d"), dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+  var W, H, nodes = [], links = [], pulses = [];
+  function fit(){
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function build(){
+    nodes = []; links = []; pulses = [];
+    var n = Math.max(14, Math.min(34, Math.floor(W * H / 42000)));
+    for(var i = 0; i < n; i++){
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .12, vy: (Math.random() - .5) * .12,
+        r: Math.random() * 1.4 + .9
+      });
+    }
+  }
+  fit();
+  window.addEventListener("resize", fit);
+
+  function tick(){
+    ctx.clearRect(0, 0, W, H);
+    var light = document.documentElement.getAttribute("data-theme") === "light";
+    var lc = light ? "20,80,120" : "80,180,220";
+
+    for(var i = 0; i < nodes.length; i++){
+      var a = nodes[i];
+      a.x += a.vx; a.y += a.vy;
+      if(a.x < 0 || a.x > W) a.vx *= -1;
+      if(a.y < 0 || a.y > H) a.vy *= -1;
+    }
+    links = [];
+    for(var i2 = 0; i2 < nodes.length; i2++){
+      for(var j = i2 + 1; j < nodes.length; j++){
+        var a2 = nodes[i2], b = nodes[j];
+        var dx = a2.x - b.x, dy = a2.y - b.y, d = Math.sqrt(dx*dx + dy*dy);
+        if(d < 190){
+          links.push([i2, j]);
+          ctx.strokeStyle = "rgba(" + lc + "," + (0.16 * (1 - d/190)).toFixed(3) + ")";
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(a2.x, a2.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for(var k = 0; k < nodes.length; k++){
+      var nd = nodes[k];
+      ctx.fillStyle = "rgba(" + lc + ",.5)";
+      ctx.beginPath(); ctx.arc(nd.x, nd.y, nd.r, 0, 6.2832); ctx.fill();
+    }
+    // pulsos viajando nas linhas
+    if(links.length && pulses.length < 8 && Math.random() < .05){
+      var L = links[Math.floor(Math.random() * links.length)];
+      pulses.push({a: L[0], b: L[1], t: 0, s: .006 + Math.random() * .008});
+    }
+    for(var p = pulses.length - 1; p >= 0; p--){
+      var pu = pulses[p]; pu.t += pu.s;
+      if(pu.t >= 1){ pulses.splice(p, 1); continue; }
+      var A = nodes[pu.a], B = nodes[pu.b];
+      if(!A || !B){ pulses.splice(p, 1); continue; }
+      var px = A.x + (B.x - A.x) * pu.t, py = A.y + (B.y - A.y) * pu.t;
+      var al = Math.sin(pu.t * Math.PI);
+      ctx.fillStyle = "rgba(46,230,214," + (al * .9).toFixed(3) + ")";
+      ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "rgba(46,230,214," + (al * .18).toFixed(3) + ")";
+      ctx.beginPath(); ctx.arc(px, py, 7, 0, 6.2832); ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+})();
+</script>
+</body>
+</html>
