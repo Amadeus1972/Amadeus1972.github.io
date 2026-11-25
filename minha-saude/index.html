@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha Saúde</title>
+<style>
+  :root { --fundo:#f2f5f4; --cartao:#fff; --texto:#101413; --apoio:#34403d; --verde:#0b5a52; }
+  @media (prefers-color-scheme: dark) { :root { --fundo:#141817; --cartao:#1f2524; --texto:#f3f4f3; --apoio:#d5dad8; --verde:#8ce3d6; } }
+  body { margin:0; background:var(--fundo); color:var(--texto); font:20px/1.6 system-ui, sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { color:var(--verde); font-size:2rem; line-height:1.2; margin:0 0 8px; }
+  h2 { font-size:1.3rem; margin:32px 0 8px; }
+  .cartao { background:var(--cartao); border-radius:16px; padding:8px 24px; margin-top:24px; }
+  a { color:var(--verde); }
+  footer { margin-top:40px; color:var(--apoio); font-size:1rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Minha Saúde</h1>
+  <p>Aplicativo Android para lembrar a hora dos remédios e anotar a pressão e a glicose. Feito para ser simples, com letras grandes.</p>
+  <div class="cartao">
+    <ul>
+      <li>Alarme com a foto do remédio e aviso quando o remédio está errado.</li>
+      <li>Registro da pressão e da glicose, com sintomas e motivos.</li>
+      <li>Relatório em PDF para levar ao médico.</li>
+      <li>Cópia dos dados no Google Drive da própria pessoa.</li>
+    </ul>
+  </div>
+  <h2>Por que o aplicativo pede acesso ao Google Drive?</h2>
+  <p>Para guardar os seus dados na pasta "Saúde" do seu próprio Drive e trazê-los de volta se você trocar de celular. O aplicativo só vê os arquivos que ele mesmo criou. Entrar com a conta Google é opcional.</p>
+  <h2>Importante</h2>
+  <p>O aplicativo ajuda a organizar informações. Ele não substitui o médico e não deve ser usado para mudar remédios por conta própria.</p>
+  <footer><a href="privacidade.html">Política de Privacidade</a></footer>
+</main>
+</body>
+</html>
